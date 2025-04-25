@@ -1,0 +1,126 @@
+<html>
+  <body>
+    <table border='1px' width='100%'>
+      <tr>
+        <td>names</td>
+        <td>scripts</td>
+      </tr>
+      <tr>
+        <td>listener - Custom listener</td>
+        <td>
+          <table border='1'>
+            <tr>
+              <td>scriptFile null</td>
+              <td>listener/return.groovy</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td>listener - Custom listener</td>
+        <td>
+          <table border='1'>
+            <tr>
+              <td>inlineScript null</td>
+              <td>import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.event.type.EventDispatchOption
+import com.atlassian.jira.issue.MutableIssue
+def customFieldManager = ComponentAccessor.getCustomFieldManager()
+def issueManager = ComponentAccessor.getIssueManager()
+def user = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser()
+def issue = event.getIssue()
+if (issue.getIssueType().isSubTask()) {
+    def parentIssue = issue.parentObject
+    def change1 = event?.getChangeLog()?.getRelated("ChildChangeItem").find { it.field == "Story Points" }
+    if (change1) {
+        def totalSP
+        double total = 0.0
+        def vvcf = customFieldManager.getCustomFieldObject(10273)
+        def resf = customFieldManager.getCustomFieldObject(10006)
+        def psp = parentIssue.getCustomFieldValue(vvcf) as Double
+        parentIssue.subTaskObjects.findAll { subtask ->
+            def sp = subtask.getCustomFieldValue(resf) as Double
+            total += sp == null ? 0 : sp
+        }
+        totalSP = total + psp
+        MutableIssue mutableParentIssue = issueManager.getIssueObject(parentIssue.id)
+        mutableParentIssue.setCustomFieldValue(resf, totalSP)
+        issueManager.updateIssue(user, mutableParentIssue, EventDispatchOption.DO_NOT_DISPATCH, false)
+    }
+}</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td>field - Родительская Тема - Custom Script Field</td>
+        <td>
+          <table border='1'>
+            <tr>
+              <td>scriptFile</td>
+              <td>fields/parentSummary.groovy</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td>field - eazyBI: Description - Custom Script Field</td>
+        <td>
+          <table border='1'>
+            <tr>
+              <td>inlineScript</td>
+              <td>def description = issue.getDescription();
+if (!description){
+    return;
+}
+else{
+    description;
+}</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td>fragment - Hide system or plugin UI element</td>
+        <td>
+          <table border='1'>
+            <tr>
+              <td>inlineScript</td>
+              <td>import com.atlassian.jira.component.ComponentAccessor
+def cf = ComponentAccessor.getCustomFieldManager().getCustomFieldObject(18300)
+if (issue.getCustomFieldValue(cf) != null && issue.getCustomFieldValue(cf).toString() != " ") {
+def cfValue = issue.getCustomFieldValue(cf).toString()
+def option = ComponentAccessor.getOptionsManager().getOptions(cf.getRelevantConfig(issue))?.find { it.toString() == cfValue}.getDisabled()
+option == false
+}
+else return true
+</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td>job - Escalation service</td>
+        <td>
+          <table border='1'>
+            <tr>
+              <td>inlineScript</td>
+              <td>// no, this bad job</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td>job - Escalation service</td>
+        <td>
+          <table border='1'>
+            <tr>
+              <td>scriptFile</td>
+              <td>jobs/job.groovy</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

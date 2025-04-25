@@ -1,0 +1,80 @@
+<html>
+  <body>
+    <table border='1px' width='100%'>
+      <tr>
+        <td>name</td>
+        <td>transitions</td>
+      </tr>
+      <tr>
+        <td>Workflow</td>
+        <td>
+          <table border='1'>
+            <tr>
+              <td>Create</td>
+              <td>
+                <table border='1'>
+                  <tr>
+                    <td>Custom script post-function</td>
+                    <td>
+                      <table border='1'>
+                        <tr>
+                          <td>inlineScript</td>
+                          <td>import com.atlassian.jira.component.ComponentAccessor
+def watcherManager = ComponentAccessor.getWatcherManager()
+def userManager = ComponentAccessor.getUserManager()
+def watchUsers = {usernames ->
+    usernames.each {
+        def user = userManager.getUserByKey(it.toString())
+        watcherManager.startWatching(user, issue)
+    }
+}
+def project = issue.getProjectObject().getKey()
+if (project as String == 'PROJECTKEY') {
+    def users = ["userName"]
+}</td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          <table border='1'>
+            <tr>
+              <td>Снят</td>
+              <td>
+                <table border='1'>
+                  <tr>
+                    <td>Simple scripted condition</td>
+                    <td>
+                      <table border='1'>
+                        <tr>
+                          <td>inlineScript</td>
+                          <td>issue.status.id == '10200' || issue.status.id == '10210'</td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+                <table border='1'>
+                  <tr>
+                    <td>Simple scripted validator</td>
+                    <td>
+                      <table border='1'>
+                        <tr>
+                          <td>scriptFile</td>
+                          <td>workflow/condition/marketing.groovy</td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

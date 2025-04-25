@@ -1,0 +1,249 @@
+{
+    "output": {
+        "workflows": [
+            {
+                "active": true,
+                "transitions": [
+                    {
+                        "href": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=Workflow&workflowTransition=1",
+                        "name": "Create",
+                        "configuredItems": [
+                            {
+                                "scripts": [
+                                    {
+                                        "scriptFile": null,
+                                        "lang": null,
+                                        "compileContextDescriptor": {
+                                            "@type": "plugin_defined",
+                                            "label": "com.onresolve.scriptrunner.canned.jira.workflow.postfunctions.CustomScriptFunction.CUSTOM_FUNCTION_CONTEXT",
+                                            "compileContextOptions": {}
+                                        },
+                                        "description": "Enter your script here",
+                                        "inlineScript": "import com.atlassian.jira.component.ComponentAccessor\r\n\r\ndef watcherManager = ComponentAccessor.getWatcherManager()\r\ndef userManager = ComponentAccessor.getUserManager()\r\ndef watchUsers = {usernames ->\r\n    usernames.each {\r\n        def user = userManager.getUserByKey(it.toString())\r\n        watcherManager.startWatching(user, issue)\r\n    }\r\n}\r\ndef project = issue.getProjectObject().getKey()\r\n\r\nif (project as String == 'PROJECTKEY') {\r\n    def users = [\"userName\"]\r\n}",
+                                        "name": "Inline script"
+                                    }
+                                ],
+                                "link": null,
+                                "id": null,
+                                "description": "Run your own groovy script from a file or entered into Jira.",
+                                "name": "Custom script post-function"
+                            }
+                        ]
+                    },
+                    {
+                        "href": "/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=Workflow&workflowTransition=11",
+                        "name": "Снят",
+                        "configuredItems": [
+                            {
+                                "scripts": [
+                                    {
+                                        "scriptFile": null,
+                                        "lang": null,
+                                        "compileContextDescriptor": {
+                                            "@type": "plugin_defined",
+                                            "label": "com.onresolve.scriptrunner.canned.jira.utils.JiraCommonCompileContexts.CONDITION_AND_ADDITIONAL_CONTEXT",
+                                            "compileContextOptions": {}
+                                        },
+                                        "description": "If the script returns a <i>falsey</i> value the transition will not be available. See the examples above, or the documentation for further information",
+                                        "inlineScript": "issue.status.id == '10200' || issue.status.id == '10210'",
+                                        "name": "Condition"
+                                    }
+                                ],
+                                "link": null,
+                                "id": null,
+                                "description": "Runs a simple embedded script to find out whether to show the action or not.",
+                                "name": "Simple scripted condition"
+                            },
+							{
+                                "scripts": [
+                                    {
+                                        "scriptFile": "workflow/condition/marketing.groovy",
+                                        "lang": null,
+                                        "description": "If the script returns a <i>falsey</i> value the transition will be blocked with the error message you provide. See the examples above, or the documentation for further information",
+                                        "scriptCompileCtxOptions": null,
+                                        "inlineScript": "cfValues['Тут может быть ваша реклама'] != null",
+                                        "name": "Condition",
+                                        "scriptCompileContext": "com.onresolve.scriptrunner.canned.jira.utils.JiraCommonCompileContexts.CONDITION_AND_ADDITIONAL_CONTEXT"
+                                    }
+                                ],
+                                "link": null,
+                                "id": null,
+                                "description": "Runs a simple embedded script to find out whether to allow the transition or not.",
+                                "name": "Simple scripted validator"
+                            }
+                        ]
+                    }
+                ],
+                "draft": false,
+                "name": "Workflow"
+            }
+        ],
+		"listeners": [
+            {
+                "scripts": [
+                    {
+                        "scriptFile": "listener/return.groovy",
+                        "lang": null,
+                        "compileContextDescriptor": {
+                            "@type": "plugin_defined",
+                            "label": "com.onresolve.scriptrunner.runner.events.JiraEventsCompileContextProvider.SCRIPT_CUSTOMLISTENER_CONTEXT",
+                            "compileContextOptions": {
+                                "events": [
+                                    1,
+                                    5,
+                                    13
+                                ]
+                            }
+                        },
+                        "description": "Enter your script here. If you are using a file then use the path to the script accessible on the server - or the fully-qualified class name for the class in the form com.acme.MyListener",
+                        "inlineScript": "return",
+                        "name": "Script"
+                    }
+                ],
+                "link": "/plugins/servlet/scriptrunner/admin/listeners/edit/3b4812b1-71ad-43e5-b4c9-d78c939b98b4",
+                "id": "3b4812b1-71ad-43e5-b4c9-d78c939b98b4",
+                "description": "Write your own groovy class as a custom listener.",
+                "name": "Custom listener"
+            },
+            {
+                "scripts": [
+                    {
+                        "scriptFile": null,
+                        "lang": null,
+                        "compileContextDescriptor": {
+                            "@type": "plugin_defined",
+                            "label": "com.onresolve.scriptrunner.runner.events.JiraEventsCompileContextProvider.SCRIPT_CUSTOMLISTENER_CONTEXT",
+                            "compileContextOptions": {
+                                "events": [
+                                    1,
+                                    5,
+                                    13
+                                ]
+                            }
+                        },
+                        "description": "Enter your script here. If you are using a file then use the path to the script accessible on the server - or the fully-qualified class name for the class in the form com.acme.MyListener",
+                        "inlineScript": "import com.atlassian.jira.component.ComponentAccessor\r\nimport com.atlassian.jira.event.type.EventDispatchOption\r\nimport com.atlassian.jira.issue.MutableIssue\r\n\r\ndef customFieldManager = ComponentAccessor.getCustomFieldManager()\r\ndef issueManager = ComponentAccessor.getIssueManager()\r\ndef user = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser()\r\ndef issue = event.getIssue()\r\n\r\nif (issue.getIssueType().isSubTask()) {\r\n    def parentIssue = issue.parentObject\r\n    def change1 = event?.getChangeLog()?.getRelated(\"ChildChangeItem\").find { it.field == \"Story Points\" }\r\n\r\n    if (change1) {\r\n        def totalSP\r\n        double total = 0.0\r\n        def vvcf = customFieldManager.getCustomFieldObject(10273)\r\n        def resf = customFieldManager.getCustomFieldObject(10006)\r\n\r\n        def psp = parentIssue.getCustomFieldValue(vvcf) as Double\r\n\r\n        parentIssue.subTaskObjects.findAll { subtask ->\r\n            def sp = subtask.getCustomFieldValue(resf) as Double\r\n            total += sp == null ? 0 : sp\r\n        }\r\n\r\n        totalSP = total + psp\r\n        MutableIssue mutableParentIssue = issueManager.getIssueObject(parentIssue.id)\r\n        mutableParentIssue.setCustomFieldValue(resf, totalSP)\r\n        issueManager.updateIssue(user, mutableParentIssue, EventDispatchOption.DO_NOT_DISPATCH, false)\r\n    }\r\n}",
+                        "name": "Script"
+                    }
+                ],
+                "link": "/plugins/servlet/scriptrunner/admin/listeners/edit/e45b2d76-0d02-4818-8ca0-7314eaafaafd",
+                "id": "e45b2d76-0d02-4818-8ca0-7314eaafaafd",
+                "description": "Write your own groovy class as a custom listener.",
+                "name": "Custom listener"
+            }
+		],
+        "fields": [
+            {
+                "scripts": [
+                    {
+                        "scriptFile": "fields/parentSummary.groovy",
+                        "lang": null,
+                        "compileContextDescriptor": {
+                            "@type": "plugin_defined",
+                            "label": "com.onresolve.scriptrunner.customfield.GroovyCustomField.SCRIPT_FIELD_CONTEXT",
+                            "compileContextOptions": {
+                                "customFieldId": null
+                            }
+                        },
+                        "description": "Enter your script here",
+                        "inlineScript": "package fields\r\n\r\nimport com.atlassian.jira.issue.Issue\r\n\r\nIssue issue = issue\r\n\r\nreturn issue.getParentObject()?.getSummary() ?: null",
+                        "name": "Script"
+                    }
+                ],
+                "link": "/plugins/servlet/scriptrunner/admin/scriptfields/edit/10d9933b-82d9-48d5-a069-a3cd8fc9b549",
+                "id": "10d9933b-82d9-48d5-a069-a3cd8fc9b549",
+                "description": "Create your own custom scripted field.",
+                "name": "Родительская Тема - Custom Script Field"
+            },
+            {
+                "scripts": [
+                    {
+                        "scriptFile": null,
+                        "lang": null,
+                        "compileContextDescriptor": {
+                            "@type": "plugin_defined",
+                            "label": "com.onresolve.scriptrunner.customfield.GroovyCustomField.SCRIPT_FIELD_CONTEXT",
+                            "compileContextOptions": {
+                                "customFieldId": null
+                            }
+                        },
+                        "description": "Enter your script here",
+                        "inlineScript": "def description = issue.getDescription();\nif (!description){\n    return;\n}\nelse{\n    description;\n}",
+                        "name": "Script"
+                    }
+                ],
+                "link": "/plugins/servlet/scriptrunner/admin/scriptfields/edit/7f857213-0bbb-4f53-8fc1-c47cf935bcc2",
+                "id": "7f857213-0bbb-4f53-8fc1-c47cf935bcc2",
+                "description": "Create your own custom scripted field.",
+                "name": "eazyBI: Description - Custom Script Field"
+            }
+        ],
+        "endpoints": [],
+        "behaviours": [],
+        "scriptErrors": [],
+        "fragments": [
+            {
+                "scripts": [
+                    {
+                        "scriptFile": null,
+                        "lang": null,
+                        "compileContextDescriptor": {
+                            "@type": "plugin_defined",
+                            "label": "com.onresolve.scriptrunner.fragments.FragmentsCannedScriptUtils.SCRIPT_FRAG_CONDITION_CONTEXT",
+                            "compileContextOptions": {}
+                        },
+                        "description": "Under what circumstances should this link be displayed. Must be either a plain script or an implementation of com.atlassian.plugin.web.Condition<br><b>Note that the item will be displayed if the code returns a <i>truthy</i> object.</b>",
+                        "inlineScript": "import com.atlassian.jira.component.ComponentAccessor\n\ndef cf = ComponentAccessor.getCustomFieldManager().getCustomFieldObject(18300)\nif (issue.getCustomFieldValue(cf) != null && issue.getCustomFieldValue(cf).toString() != \" \") {\ndef cfValue = issue.getCustomFieldValue(cf).toString()\ndef option = ComponentAccessor.getOptionsManager().getOptions(cf.getRelevantConfig(issue))?.find { it.toString() == cfValue}.getDisabled()\noption == false\n}\nelse return true\n",
+                        "name": "Condition"
+                    }
+                ],
+                "link": "/plugins/servlet/scriptrunner/admin/fragments/edit/422293233",
+                "id": "422293233",
+                "description": "Conditionally hides (or displays) a system web item or panel",
+                "name": "Hide system or plugin UI element"
+            }
+        ],
+        "jobs": [
+            {
+                "scripts": [
+                    {
+                        "scriptFile": null,
+                        "lang": null,
+                        "compileContextDescriptor": {
+                            "@type": "plugin_defined",
+                            "label": "com.onresolve.scriptrunner.canned.jira.utils.JiraCommonCompileContexts.ADDITIONAL_CODE_CONTEXT",
+                            "compileContextOptions": {}
+                        },
+                        "description": "Enter any customisations to the target issue, e.g. hard-coding specific field values.",
+                        "inlineScript": "// no, this bad job",
+                        "name": "Additional issue actions"
+                    }
+                ],
+                "link": "/plugins/servlet/scriptrunner/admin/jobs/edit/a09dc339-48f8-475f-add8-4cb0f7b60d14",
+                "id": "a09dc339-48f8-475f-add8-4cb0f7b60d14",
+                "description": "Can periodically modify issues based on a JQL query, for instance: to change the state of issues if they have been inactive for 2 weeks.",
+                "name": "Escalation service"
+            },
+            {
+                "scripts": [
+                    {
+                        "scriptFile": "jobs/job.groovy",
+                        "lang": null,
+                        "compileContextDescriptor": {
+                            "@type": "plugin_defined",
+                            "label": "com.onresolve.scriptrunner.canned.jira.utils.JiraCommonCompileContexts.ADDITIONAL_CODE_CONTEXT",
+                            "compileContextOptions": {}
+                        },
+                        "description": "Enter any customisations to the target issue, e.g. hard-coding specific field values.",
+                        "inlineScript": "// yes, this good job",
+                        "name": "Additional issue actions"
+                    }
+                ],
+                "link": "/plugins/servlet/scriptrunner/admin/jobs/edit/45e8e766-7974-4a0b-a093-60dbaad44d2a",
+                "id": "45e8e766-7974-4a0b-a093-60dbaad44d2a",
+                "description": "Can periodically modify issues based on a JQL query, for instance: to change the state of issues if they have been inactive for 2 weeks.",
+                "name": "Escalation service"
+            }
+        ]
+    }
+}

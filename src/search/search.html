@@ -1,0 +1,71 @@
+<html>
+  <body>
+    <table border='1px' width='100%'>
+      <tr>
+        <td>location</td>
+        <td>script</td>
+        <td>link</td>
+      </tr>
+      <tr>
+        <td>Workflow / Workflow / Create / Custom script post-function</td>
+        <td>import com.atlassian.jira.component.ComponentAccessor
+def watcherManager = ComponentAccessor.getWatcherManager()
+def userManager = ComponentAccessor.getUserManager()
+def watchUsers = {usernames ->
+    usernames.each {
+        def user = userManager.getUserByKey(it.toString())
+        watcherManager.startWatching(user, issue)
+    }
+}
+def project = issue.getProjectObject().getKey()
+if (project as String == 'PROJECTKEY') {
+    def users = ["userName"]
+}</td>
+        <td>https://BaseUrl/secure/admin/workflows/ViewWorkflowTransition.jspa?workflowMode=live&workflowName=Workflow&workflowTransition=1</td>
+      </tr>
+      <tr>
+        <td>listener / Custom listener</td>
+        <td>import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.event.type.EventDispatchOption
+import com.atlassian.jira.issue.MutableIssue
+def customFieldManager = ComponentAccessor.getCustomFieldManager()
+def issueManager = ComponentAccessor.getIssueManager()
+def user = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser()
+def issue = event.getIssue()
+if (issue.getIssueType().isSubTask()) {
+    def parentIssue = issue.parentObject
+    def change1 = event?.getChangeLog()?.getRelated("ChildChangeItem").find { it.field == "Story Points" }
+    if (change1) {
+        def totalSP
+        double total = 0.0
+        def vvcf = customFieldManager.getCustomFieldObject(10273)
+        def resf = customFieldManager.getCustomFieldObject(10006)
+        def psp = parentIssue.getCustomFieldValue(vvcf) as Double
+        parentIssue.subTaskObjects.findAll { subtask ->
+            def sp = subtask.getCustomFieldValue(resf) as Double
+            total += sp == null ? 0 : sp
+        }
+        totalSP = total + psp
+        MutableIssue mutableParentIssue = issueManager.getIssueObject(parentIssue.id)
+        mutableParentIssue.setCustomFieldValue(resf, totalSP)
+        issueManager.updateIssue(user, mutableParentIssue, EventDispatchOption.DO_NOT_DISPATCH, false)
+    }
+}</td>
+        <td>https://BaseUrl/plugins/servlet/scriptrunner/admin/listeners/edit/e45b2d76-0d02-4818-8ca0-7314eaafaafd</td>
+      </tr>
+      <tr>
+        <td>fragment / Hide system or plugin UI element</td>
+        <td>import com.atlassian.jira.component.ComponentAccessor
+def cf = ComponentAccessor.getCustomFieldManager().getCustomFieldObject(18300)
+if (issue.getCustomFieldValue(cf) != null && issue.getCustomFieldValue(cf).toString() != " ") {
+def cfValue = issue.getCustomFieldValue(cf).toString()
+def option = ComponentAccessor.getOptionsManager().getOptions(cf.getRelevantConfig(issue))?.find { it.toString() == cfValue}.getDisabled()
+option == false
+}
+else return true
+</td>
+        <td>https://BaseUrl/plugins/servlet/scriptrunner/admin/fragments/edit/422293233</td>
+      </tr>
+    </table>
+  </body>
+</html>
