@@ -1,6 +1,8 @@
-Заменяем файл scriptRegistry.json на свежую выгрузку из jira.
-Для загрузки файла запрос POST адресу https://baseURL/rest/scriptrunner/latest/canned/com.onresolve.scriptrunner.canned.jira.admin.ScriptRegistry
-toHtmlTable.groovy преобразует Json в Html
-    Получается 2 файла workflows.html и others.html
-    Открывать лучше локально а не из Idea
-search.groovy ищет в json упонимание необходимого текста, переменная textSearch и генерирует html таблицу с результатами.
+Replace the scriptRegistry.json file with a fresh download from jira.
+To download the file, make a POST request to https://baseURL/rest/scriptrunner/latest/canned/com.onresolve.scriptrunner.canned.jira.admin.ScriptRegistry
+
+toHtmlTable.groovy converts JSON to HTML
+This results in 2 files: workflows.html and others.html
+It is better to open it locally, not from the IDE
+
+search.groovy searches for text in JSON and generates an HTML table with the results.
